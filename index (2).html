@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sean</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,300&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      cursor: none;
+    }
+
+    /* ── Shared scene ── */
+    .scene {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.12s ease-out;
+    }
+
+    /* ── Light layer (bottom) ── */
+    #light {
+      background: #fff;
+      color: #111;
+      z-index: 1;
+    }
+
+    #light .headline {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(2.8rem, 7vw, 6rem);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: #111;
+      user-select: none;
+    }
+
+    #light .headline em {
+      font-style: italic;
+      font-weight: 300;
+      font-size: 0.88em;
+      letter-spacing: 0.01em;
+    }
+
+    #light .sub {
+      margin-top: 1.2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+      letter-spacing: 0.18em;
+      color: #555;
+      user-select: none;
+    }
+
+    /* ── Dark layer (top, clipped by circle) ── */
+    #dark {
+      background: #0d0d0d;
+      color: #f0f0f0;
+      z-index: 2;
+      /* clip-path updated by JS */
+      clip-path: circle(0px at 50% 50%);
+      transition: none; /* no transition on clip itself for real-time tracking */
+    }
+
+    #dark .headline {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: clamp(2.8rem, 7vw, 6rem);
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: #f0f0f0;
+      user-select: none;
+    }
+
+    #dark .sub {
+      margin-top: 1.2rem;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: clamp(0.85rem, 1.6vw, 1.05rem);
+      letter-spacing: 0.18em;
+      color: #888;
+      user-select: none;
+    }
+
+    /* ── Circle border overlay ── */
+    #ring {
+      position: fixed;
+      border-radius: 50%;
+      border: 1.5px solid rgba(150,150,150,0.55);
+      pointer-events: none;
+      z-index: 3;
+      transform: translate(-50%, -50%);
+      transition: width 0.18s ease, height 0.18s ease;
+    }
+
+    /* ── Custom cursor dot ── */
+    #cursor {
+      position: fixed;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #888;
+      pointer-events: none;
+      z-index: 10;
+      transform: translate(-50%, -50%);
+      mix-blend-mode: difference;
+    }
+
+    /* ── Subtle grain overlay ── */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 9;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Light layer -->
+  <div class="scene" id="light">
+    <h1 class="headline">HELLO, I'M <em>Sean</em></h1>
+    <p class="sub">College Student&nbsp;&nbsp;/&nbsp;&nbsp;20岁&nbsp;&nbsp;/&nbsp;&nbsp;江苏苏州</p>
+  </div>
+
+  <!-- Dark layer -->
+  <div class="scene" id="dark">
+    <h1 class="headline">你好，我是骁</h1>
+    <p class="sub">College Student&nbsp;&nbsp;/&nbsp;&nbsp;20岁&nbsp;&nbsp;/&nbsp;&nbsp;江苏苏州</p>
+  </div>
+
+  <!-- Ring border -->
+  <div id="ring"></div>
+
+  <!-- Cursor dot -->
+  <div id="cursor"></div>
+
+  <script>
+    const dark   = document.getElementById('dark');
+    const ring   = document.getElementById('ring');
+    const cursor = document.getElementById('cursor');
+    const lightScene = document.getElementById('light');
+    const darkScene  = document.getElementById('dark');
+
+    const RADIUS = 130;   // spotlight circle radius in px
+    const MAX_TILT = 22;  // max degrees for 3D tilt
+
+    let mx = window.innerWidth  / 2;
+    let my = window.innerHeight / 2;
+    let tx = 0, ty = 0;   // smooth tilt angles
+
+    function lerp(a, b, t) { return a + (b - a) * t; }
+
+    function update() {
+      // Normalized -1 to 1
+      const nx = (mx / window.innerWidth)  - 0.5;
+      const ny = (my / window.innerHeight) - 0.5;
+
+      // Target tilt angles
+      const targetX = -ny * MAX_TILT;  // tilt up/down
+      const targetY =  nx * MAX_TILT;  // tilt left/right
+
+      // Smooth interpolation
+      tx = lerp(tx, targetX, 0.08);
+      ty = lerp(ty, targetY, 0.08);
+
+      // Apply 3D tilt only to light layer content
+      lightScene.style.transform = `perspective(500px) rotateX(${tx}deg) rotateY(${ty}deg)`;
+
+      // Dark layer: same tilt so it aligns when revealed
+      darkScene.style.transform = `perspective(500px) rotateX(${tx}deg) rotateY(${ty}deg)`;
+
+      // Clip the dark layer at raw mouse position
+      dark.style.clipPath = `circle(${RADIUS}px at ${mx}px ${my}px)`;
+
+      // Ring border follows cursor exactly
+      ring.style.left   = mx + 'px';
+      ring.style.top    = my + 'px';
+      ring.style.width  = RADIUS * 2 + 'px';
+      ring.style.height = RADIUS * 2 + 'px';
+
+      // Cursor dot
+      cursor.style.left = mx + 'px';
+      cursor.style.top  = my + 'px';
+
+      requestAnimationFrame(update);
+    }
+
+    document.addEventListener('mousemove', e => {
+      mx = e.clientX;
+      my = e.clientY;
+    });
+
+    update();
+  </script>
+</body>
+</html>
