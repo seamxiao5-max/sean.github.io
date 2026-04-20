@@ -130,14 +130,14 @@
   <div class="text-layer" id="text-light">
     <div class="content" id="content-light">
       <h1 class="headline">HELLO, I'M <em>Sean</em></h1>
-      <p class="sub">College Student&nbsp;&nbsp;/&nbsp;&nbsp;20岁&nbsp;&nbsp;/&nbsp;&nbsp;江苏苏州</p>
+      <p class="sub">College Student&nbsp;&nbsp;/&nbsp;&nbsp;20 years old&nbsp;&nbsp;/&nbsp;&nbsp;Suzhou, Jiangsu</p>
     </div>
   </div>
 
   <div class="text-layer" id="text-dark">
     <div class="content" id="content-dark">
       <h1 class="headline">你好，我是骁</h1>
-      <p class="sub">College Student&nbsp;&nbsp;/&nbsp;&nbsp;20岁&nbsp;&nbsp;/&nbsp;&nbsp;江苏苏州</p>
+      <p class="sub">大学本科生&nbsp;&nbsp;/&nbsp;&nbsp;20岁&nbsp;&nbsp;/&nbsp;&nbsp;江苏苏州</p>
     </div>
   </div>
 
@@ -149,6 +149,7 @@
     const textDark     = document.getElementById('text-dark');
     const ring         = document.getElementById('ring');
     const cursor       = document.getElementById('cursor');
+    const textLight      = document.getElementById('text-light');
     const contentLight = document.getElementById('content-light');
     const contentDark  = document.getElementById('content-dark');
 
@@ -177,6 +178,10 @@
       const clip = `circle(${RADIUS}px at ${mx}px ${my}px)`;
       bgDark.style.clipPath   = clip;
       textDark.style.clipPath = clip;
+
+      // Hide light text inside the circle using invert clip
+      const clipOut = `path(evenodd, 'M0 0 H${window.innerWidth} V${window.innerHeight} H0 Z M${mx} ${my} m-${RADIUS},0 a${RADIUS},${RADIUS} 0 1,0 ${RADIUS*2},0 a${RADIUS},${RADIUS} 0 1,0 -${RADIUS*2},0')`;
+      textLight.style.clipPath = clipOut;
 
       // Ring and cursor follow mouse directly
       ring.style.left   = mx + 'px';
