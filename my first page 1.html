@@ -6,111 +6,94 @@
   <title>Sean</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,300&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet" />
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; cursor: none !important; }
 
-    html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
-      cursor: none;
-    }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
 
-    /* White bg with dot grid */
     #bg {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background-color: #fff;
       background-image: radial-gradient(circle, #ccc 1px, transparent 1px);
       background-size: 28px 28px;
       z-index: 0;
+      transition: background-color 0.4s;
     }
 
-    /* Dark bg clipped to circle */
     #bg-dark {
-      position: fixed;
-      inset: 0;
+      position: fixed; inset: 0;
       background-color: #0d0d0d;
       background-image: radial-gradient(circle, #2e2e2e 1px, transparent 1px);
       background-size: 28px 28px;
-      clip-path: circle(0px at 50% 50%);
       z-index: 1;
+      clip-path: circle(0px at -999px -999px);
     }
 
-    /* Text containers centered and fixed */
     .text-layer {
-      position: fixed;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      position: fixed; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
       pointer-events: none;
     }
 
     #text-light { z-index: 2; }
-    #text-dark  { z-index: 3; clip-path: circle(0px at 50% 50%); }
+    #text-dark  { z-index: 3; clip-path: circle(0px at -999px -999px); }
 
-    /* Only the inner content box tilts */
     .content {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      will-change: transform;
+      display: flex; flex-direction: column;
+      align-items: center; will-change: transform;
     }
 
     #text-light .headline {
-      font-family: 'Playfair Display', serif;
-      font-weight: 700;
+      font-family: 'Playfair Display', serif; font-weight: 700;
       font-size: clamp(2.8rem, 7vw, 6rem);
-      letter-spacing: -0.02em;
-      line-height: 1;
-      color: #111;
-      user-select: none;
+      letter-spacing: -0.02em; line-height: 1;
+      color: #111; user-select: none;
     }
     #text-light .headline em {
-      font-style: italic;
-      font-weight: 300;
-      font-size: 0.88em;
-      letter-spacing: 0.01em;
+      font-style: italic; font-weight: 300;
+      font-size: 0.88em; letter-spacing: 0.01em;
     }
     #text-light .sub {
       margin-top: 1.2rem;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 300;
+      font-family: 'DM Sans', sans-serif; font-weight: 300;
       font-size: clamp(0.85rem, 1.6vw, 1.05rem);
-      letter-spacing: 0.18em;
-      color: #555;
-      user-select: none;
+      letter-spacing: 0.18em; color: #555; user-select: none;
     }
 
     #text-dark .headline {
-      font-family: 'Playfair Display', serif;
-      font-weight: 700;
+      font-family: 'Playfair Display', serif; font-weight: 700;
       font-size: clamp(2.8rem, 7vw, 6rem);
-      letter-spacing: -0.02em;
-      line-height: 1;
-      color: #f0f0f0;
-      user-select: none;
+      letter-spacing: -0.02em; line-height: 1;
+      color: #f0f0f0; user-select: none;
     }
     #text-dark .sub {
       margin-top: 1.2rem;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 300;
+      font-family: 'DM Sans', sans-serif; font-weight: 300;
       font-size: clamp(0.85rem, 1.6vw, 1.05rem);
-      letter-spacing: 0.18em;
-      color: #888;
-      user-select: none;
+      letter-spacing: 0.18em; color: #888; user-select: none;
     }
 
-    /* Ring fixed in screen space */
+    /* zh-mode: flip the two layers */
+    body.zh-mode #bg        { background-color: #0d0d0d; background-image: radial-gradient(circle, #2e2e2e 1px, transparent 1px); }
+    body.zh-mode #bg-dark   { background-color: #fff;    background-image: radial-gradient(circle, #ccc 1px, transparent 1px); }
+    body.zh-mode #text-light .headline { color: #f0f0f0; }
+    body.zh-mode #text-light .sub      { color: #888; }
+    body.zh-mode #text-dark  .headline { color: #111; }
+    body.zh-mode #text-dark  .sub      { color: #555; }
+
+    /* Ring */
     #ring {
       position: fixed;
+      width: 260px; height: 260px;
       border-radius: 50%;
       border: 1.5px solid rgba(130,130,130,0.6);
       pointer-events: none;
       z-index: 10;
+      left: -999px; top: -999px;
       transform: translate(-50%, -50%);
     }
 
+    /* Cursor dot */
     #cursor {
       position: fixed;
       width: 5px; height: 5px;
@@ -118,8 +101,33 @@
       background: #999;
       pointer-events: none;
       z-index: 11;
+      left: -999px; top: -999px;
       transform: translate(-50%, -50%);
     }
+
+    /* Language toggle */
+    #lang-toggle {
+      position: fixed;
+      top: 1.4rem; right: 1.8rem;
+      z-index: 20;
+      display: flex;
+      border: 1.5px solid #bbb;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    #lang-toggle button {
+      padding: 0.35rem 0.75rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      border: none; outline: none;
+      transition: background 0.2s, color 0.2s;
+    }
+    #btn-en { background: #111; color: #fff; }
+    #btn-zh { background: #fff; color: #111; }
+    body.zh-mode #btn-en { background: #fff; color: #111; }
+    body.zh-mode #btn-zh { background: #111; color: #fff; }
+    body.zh-mode #lang-toggle { border-color: #444; }
   </style>
 </head>
 <body>
@@ -130,7 +138,7 @@
   <div class="text-layer" id="text-light">
     <div class="content" id="content-light">
       <h1 class="headline">HELLO, I'M <em>Sean</em></h1>
-      <p class="sub">Undergraduate Student&nbsp;&nbsp;/&nbsp;&nbsp;20 years old&nbsp;&nbsp;/&nbsp;&nbsp;Suzhou, Jiangsu</p>
+      <p class="sub">College Student&nbsp;&nbsp;/&nbsp;&nbsp;20 years old&nbsp;&nbsp;/&nbsp;&nbsp;Suzhou, Jiangsu</p>
     </div>
   </div>
 
@@ -144,53 +152,57 @@
   <div id="ring"></div>
   <div id="cursor"></div>
 
+  <div id="lang-toggle">
+    <button id="btn-en">EN</button>
+    <button id="btn-zh">中文</button>
+  </div>
+
   <script>
     const bgDark       = document.getElementById('bg-dark');
+    const textLight    = document.getElementById('text-light');
     const textDark     = document.getElementById('text-dark');
     const ring         = document.getElementById('ring');
-    const cursor       = document.getElementById('cursor');
-    const textLight      = document.getElementById('text-light');
+    const cursorDot    = document.getElementById('cursor');
     const contentLight = document.getElementById('content-light');
     const contentDark  = document.getElementById('content-dark');
 
     const RADIUS   = 130;
     const MAX_TILT = 22;
 
-    let mx = window.innerWidth  / 2;
-    let my = window.innerHeight / 2;
+    let mx = -999, my = -999;
     let tx = 0, ty = 0;
+    let hasMoused = false;
 
     function lerp(a, b, t) { return a + (b - a) * t; }
 
     function update() {
+      // Smooth tilt
       const nx = (mx / window.innerWidth)  - 0.5;
       const ny = (my / window.innerHeight) - 0.5;
-
       tx = lerp(tx, -ny * MAX_TILT, 0.08);
       ty = lerp(ty,  nx * MAX_TILT, 0.08);
 
-      // Only tilt the text content, not the backgrounds
       const tiltCSS = `perspective(600px) rotateX(${tx}deg) rotateY(${ty}deg)`;
       contentLight.style.transform = tiltCSS;
       contentDark.style.transform  = tiltCSS;
 
-      // Clip dark layers using raw mouse pos (screen space, no tilt)
+      // Spotlight clip on dark layers
       const clip = `circle(${RADIUS}px at ${mx}px ${my}px)`;
       bgDark.style.clipPath   = clip;
       textDark.style.clipPath = clip;
 
-      // Hide light text inside the circle using invert clip
-      const clipOut = `path(evenodd, 'M0 0 H${window.innerWidth} V${window.innerHeight} H0 Z M${mx} ${my} m-${RADIUS},0 a${RADIUS},${RADIUS} 0 1,0 ${RADIUS*2},0 a${RADIUS},${RADIUS} 0 1,0 -${RADIUS*2},0')`;
-      textLight.style.clipPath = clipOut;
+      // Hide light text inside the circle
+      const W = window.innerWidth, H = window.innerHeight;
+      const R = RADIUS;
+      textLight.style.clipPath = `path(evenodd, 'M0 0 H${W} V${H} H0 Z M${mx} ${my} m-${R},0 a${R},${R} 0 1,0 ${R*2},0 a${R},${R} 0 1,0 -${R*2},0')`;
 
-      // Ring and cursor follow mouse directly
-      ring.style.left   = mx + 'px';
-      ring.style.top    = my + 'px';
-      ring.style.width  = (RADIUS * 2) + 'px';
-      ring.style.height = (RADIUS * 2) + 'px';
-
-      cursor.style.left = mx + 'px';
-      cursor.style.top  = my + 'px';
+      // Ring and cursor
+      if (hasMoused) {
+        ring.style.left = mx + 'px';
+        ring.style.top  = my + 'px';
+        cursorDot.style.left = mx + 'px';
+        cursorDot.style.top  = my + 'px';
+      }
 
       requestAnimationFrame(update);
     }
@@ -198,7 +210,36 @@
     document.addEventListener('mousemove', e => {
       mx = e.clientX;
       my = e.clientY;
+      hasMoused = true;
     });
+
+    // Language toggle
+    const copy = {
+      en: {
+        headline:     'HELLO, I\'M <em>Sean</em>',
+        sub:          'College Student&nbsp;&nbsp;/&nbsp;&nbsp;20 years old&nbsp;&nbsp;/&nbsp;&nbsp;Suzhou, Jiangsu',
+        headlineDark: '你好，我是骁',
+        subDark:      '大学本科生&nbsp;&nbsp;/&nbsp;&nbsp;20岁&nbsp;&nbsp;/&nbsp;&nbsp;江苏苏州'
+      },
+      zh: {
+        headline:     '你好，我是骁',
+        sub:          '大学本科生&nbsp;&nbsp;/&nbsp;&nbsp;20岁&nbsp;&nbsp;/&nbsp;&nbsp;江苏苏州',
+        headlineDark: 'HELLO, I\'M <em>Sean</em>',
+        subDark:      'College Student&nbsp;&nbsp;/&nbsp;&nbsp;20 years old&nbsp;&nbsp;/&nbsp;&nbsp;Suzhou, Jiangsu'
+      }
+    };
+
+    function setLang(lang) {
+      const c = copy[lang];
+      document.querySelector('#content-light .headline').innerHTML = c.headline;
+      document.querySelector('#content-light .sub').innerHTML      = c.sub;
+      document.querySelector('#content-dark  .headline').innerHTML = c.headlineDark;
+      document.querySelector('#content-dark  .sub').innerHTML      = c.subDark;
+      document.body.classList.toggle('zh-mode', lang === 'zh');
+    }
+
+    document.getElementById('btn-en').addEventListener('click', () => setLang('en'));
+    document.getElementById('btn-zh').addEventListener('click', () => setLang('zh'));
 
     update();
   </script>
